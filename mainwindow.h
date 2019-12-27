@@ -11,6 +11,7 @@
 //: to keep our include lists and compile times short we only provide forward
 //: declarations for classes we only have pointers to
 namespace Ui {
+class SampleBuffer;
 class MainWindow;
 }
 
@@ -25,6 +26,7 @@ private slots:
 	void toggleRecording();
 
 private:
+
 	// function for loading / saving the config file
 	QString find_config_file(const char *filename);
 	void load_config(const QString &filename);
@@ -33,9 +35,9 @@ private:
 	//: once and automatically deletes the objects when the `unique_ptr` goes
 	//: out of scope.
 	std::unique_ptr<std::thread> reader{nullptr};
-
 	std::unique_ptr<Ui::MainWindow> ui; // window pointer
 	std::atomic<bool> shutdown{false};  // flag indicating whether the recording thread should quit
+	std::vector<BackyardBrains::HIDManagerDevice> _devices;
 };
 
 #endif // MAINWINDOW_H

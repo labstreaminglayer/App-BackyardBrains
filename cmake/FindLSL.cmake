@@ -1,5 +1,3 @@
-
-
 # Cmake find-module for liblsl
 # Usage:
 # Install set either LSL_INSTALL_ROOT to the path where liblsl was

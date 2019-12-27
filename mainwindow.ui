@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>242</width>
+    <height>138</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>BestPracticesGUI Connector</string>
   </property>
@@ -10,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QLabel" name="label_name">
       <property name="text">
-       <string>Name</string>
+       <string>devicePath</string>
       </property>
      </widget>
     </item>
@@ -51,8 +59,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>262</width>
-     <height>30</height>
+     <width>242</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

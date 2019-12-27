@@ -1,57 +1,47 @@
-Click on the green "Use this template" button on GitHub to generate a repository from this template.
-Then edit this README.md to delete this text and replace the below text for your own app.
+# BackyardBrains LSL Interface
 
-# Application Description
+This application streams data to LSL from a BackyardBrains SpikerBoxPro device connected via USB.
+This is a work-in-progress and not ready yet!
 
-Use this section to describe your application.
+## Application Architecture
 
-The template app doesn't send any useful data, but provides a starting point to develop your own apps. 
-This app is written in C++ and uses the Qt framework.
-
-The important source files are listed below:
-
-- `main.cpp` is the entry point
-- `mainwindow.cpp` contains the UI code and code to access the recording device
-- `mainwindow.h` is the corresponding header
+The application loosely follows the [standard LSL App Template](https://github.com/labstreaminglayer/AppTemplate_cpp_qt).
+In this application, 
 
 ## Dependencies
 
-Use this section to describe what libraries/tools are required to RUN this application.
-Build dependencies should be listed in the build instructions elsewhere.
-
-For example, if the data provider uses a server/client architecture,
-then the user will need to download, install, and run the server.
-
-If the application requires a device library (typically a DLL on Windows, sometimes shipped in an SDK),
-then instruct the user on how to obtain the library and how to install it on their system.
-For example, "You must obtain the device_client.dll from the manufacturer. Copy that dll file into the
-same folder as this application executable."
-
-This template application has no dependencies.
+1. Qt
+    * See [here](https://labstreaminglayer.readthedocs.io/dev/build_env.html#qt5)
+2. hidapi
+    * Windows:
+        * Download https://github.com/libusb/hidapi/releases/latest/download/hidapi-win.zip
+        * Extract the hidapi-win folder into this repository's root.
+        * Save [hidapi.h](https://raw.githubusercontent.com/libusb/hidapi/master/hidapi/hidapi.h) into hidapi-win/x64/ and/or hidapi-win/x86/
+    * Linux:
+        * `sudo apt-get install -y libhidapi-dev`
+    * MacOS:
+        * `brew install hidapi`
+3. LSL
+    * Windows:
+        * Download https://github.com/sccn/liblsl/releases/latest/download/liblsl-1.13.0-Win32.7z
+        * Create LSL folder in this repository.
+        * Extract contents of 7zip file above into LSL folder.
+        * cmake will require LSL_INSTALL_ROOT=LSL
 
 ## Download
 
-Use this section to describe how/where to download prebuilt applications.
-Typically this means using the GitHub repository release page.
+See the [releases page](https://github.com/labstreaminglayer/App-BackyardBrains/releases).
+(In progress)
 
 # Build
 
 This application can be built following general
 [LSL Application build instructions](https://labstreaminglayer.readthedocs.io/dev/app_build.html).
 
-Use this section to provide additional specific build instructions.
-Alternatively, provide required information in a separate BUILD.md.
+If you have hidapi installed somewhere other than the default location then you can tell CMake where to find that folder with the cmake argument `HIDAPI_ROOT_DIR=path/to/hidapi_lib_and_h`
 
 # License
 
-Since using this app as a starting point is actively encouraged, it is licensed
-under the [MIT](https://choosealicense.com/licenses/mit/) license.
-
-If you want others to share the code to derivatives of your app, you should
-consider licensing your app under a less permissive license like the
-[MPL](https://choosealicense.com/licenses/mpl-2.0/) or
-[GPL](https://choosealicense.com/licenses/gpl-3.0/).
-
-Even in case you want to keep the MIT license, change the `LICENSE.txt` to
-reflect that you're the copyright holder.
-
+This application has components from https://github.com/BackyardBrains/Spike-Recorder but I could not find its license information.
+Until the latter professes a more restrictive license, this application is provided with MIT license.
+Note that there are some additional limitations due to the use of Qt. See LICENSE.txt

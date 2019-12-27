@@ -3,7 +3,7 @@
 /*: The next two includes are our own headers that define the interfaces for
  * our window class and the recording device */
 #include "mainwindow.h"
-#include "reader.h"
+#include "src/HIDUsbManager.h"
 /*: `ui_mainwindow.h` is automatically generated from `mainwindow.ui`.
  * It defines the `Ui::MainWindow` class with the widgets as members. */
 #include "ui_mainwindow.h"
@@ -21,6 +21,8 @@
 #include <lsl_cpp.h>
 #include <string>
 #include <vector>
+
+const int DEFAULT_SAMPLE_RATE = 44100;
 
 
 /*: The constructor mainly sets up the `Ui::MainWindow` class and creates the
@@ -49,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent, const char *config_file)
 		QMessageBox::about(this, "About this app", infostr);
 	});
 	connect(ui->linkButton, &QPushButton::clicked, this, &MainWindow::toggleRecording);
+
+	BackyardBrains::HIDUsbManager _hidUsbManager;
 
 
 	//: At the end of the constructor, we load the supplied config file or find it
@@ -104,29 +108,87 @@ void MainWindow::closeEvent(QCloseEvent *ev) {
  * the shutdown flag indicates that the recording should stop as soon as possible */
 void recording_thread_function(
 	std::string name, int32_t device_param, std::atomic<bool> &shutdown) {
+
+	int64_t _pos = 0;
+	int _sampleRate = DEFAULT_SAMPLE_RATE;
+	int _selectedVDevice = 0;
+	int _numOfHidChannels = 2;
+	bool _HIDShouldBeReloaded = false;
+	clock_t timerUSB = 0;
+
+	bool _hidMode = false;
+	bool _paused = false;
+
+	// Create an instance of the HIDUsbManager.
+	BackyardBrains::HIDUsbManager _hidUsbManager;
+
+
+	// Get information about connected device(s)
 	//: create an outlet and a send buffer
-	lsl::stream_info info(name, "Counter", 1, 10, lsl::cf_int32);
+	lsl::stream_info info(name, "EMG", 2, _sampleRate, lsl::cf_int32);
 	lsl::stream_outlet outlet(info);
-	std::vector<int32_t> buffer(1, 20);
+	std::vector<int32_t> buffer(_numOfHidChannels, _sampleRate);
+	//int32_t *buffer = new int32_t[channum * len];
 
-
-	//: Connect to the device, depending on the SDK you might also have to
-	//: create a device object and connect to it via a method call
-	Reader device(device_param);
-
-
-	/*: the recording loop. The logic here is as follows:
-	 * - acquire some data
-	 * - copy it to the buffer (here in one step)
-	 * - push it to the outlet
-	 * - do that again unless the shutdown flag was set in the meantime */
 	while (!shutdown) {
-		// "Acquire data"
-		if (device.getData(buffer)) {
-			outlet.push_chunk_multiplexed(buffer);
+		try {
+			// Scan for devices, rate limit to once per second.
+			clock_t end = clock();
+			double elapsed_secs = double(end - timerUSB) / CLOCKS_PER_SEC;
+			if (elapsed_secs > 1) {
+				timerUSB = end;
+				_hidUsbManager.getAllDevicesList();
+			}
+		} catch (int e) { std::cout << "Error HID scan\n"; }
+
+		if (_HIDShouldBeReloaded) {
+			//initDefaultJoystickKeys();
+			_HIDShouldBeReloaded = false;
+			HIDBoardType deviceType = (HIDBoardType)_hidUsbManager.currentlyConnectedHIDBoardType();
+			if (!_hidUsbManager.deviceOpened()) {
+				if (_hidUsbManager.openDevice(deviceType) == -1) {
+					_hidMode = false;
+					// hidError = _hidUsbManager.errorString;
+					break;
+				}
+			}
+			// TODO: clear()
+			int frequency = _hidUsbManager.maxSamplingRate();
+			_numOfHidChannels = _hidUsbManager.numberOfChannels();
+			// std::cout<<"HID Frequency: "<<frequency<<" Chan:
+			// "<<_hidUsbManager.numberOfChannels()<<" Samp:
+			// "<<_hidUsbManager.maxSamplingRate()<<"\n";
+
+			int bytespersample = 4;
+			_hidMode = true;
 		} else {
-			// Acquisition was unsuccessful? -> Quit
-			break;
+
+			if (!_hidUsbManager.deviceOpened()) {
+				_numOfHidChannels = 2;
+				_hidUsbManager.closeDevice();
+				_hidMode = false;
+
+				_hidUsbManager.getAllDevicesList();
+			}
+			uint32_t len = 30000;
+			// len = std::min(samples, len);
+			// std::cout<<len<<"\n";
+			const int channum = _numOfHidChannels;
+			
+
+			// get interleaved data for all channels
+			int samplesRead = _hidUsbManager.readDevice(buffer);
+
+			if (_paused || samplesRead == 0) {
+				delete[] buffer;
+				break;
+			}
+			if (samplesRead != -1) {
+				// TODO: Send data from buffer to LSL
+
+				delete[] buffer;
+				_pos += samplesRead;
+			}
 		}
 	}
 }
