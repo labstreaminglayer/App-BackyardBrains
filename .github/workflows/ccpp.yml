@@ -63,9 +63,11 @@ jobs:
           Invoke-WebRequest -Uri https://github.com/libusb/hidapi/releases/latest/download/hidapi-win.zip
           Expand-Archive hidapi-win.zip -DestinationPath ./
           Invoke-WebRequest -Uri https://raw.githubusercontent.com/libusb/hidapi/master/hidapi/hidapi.h -o hidapi-win/x64/hidapi.h
+      if: matrix.os == 'windows-latest'
     - name: Install HIDAPI (MacOS)
       run: |
           brew install hidapi
+      if: matrix.os == 'macOS-latest'
     - name: Configure CMake
       shell: bash
       run: |
