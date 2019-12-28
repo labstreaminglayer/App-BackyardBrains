@@ -1,0 +1,73 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  LSL_URL: 'https://github.com/sccn/liblsl/releases/download'
+  LSL_RELEASE: '1.13.0'
+  LSL_RELEASE_SUFFIX: '-b13'
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - windows-latest
+        - macOS-latest
+      fail-fast: false
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: CMake version
+      run: cmake --version
+    - name: download liblsl (Ubuntu)
+      run: |
+           echo ${LSL_URL}/${LSL_RELEASE}${LSL_RELEASE_SUFFIX}/liblsl-${LSL_RELEASE}-Linux64-xenial.deb 
+           curl -L ${LSL_URL}/${LSL_RELEASE}${LSL_RELEASE_SUFFIX}/liblsl-${LSL_RELEASE}-Linux64-xenial.deb -o liblsl.deb
+           dpkg -x liblsl.deb .
+           mv usr LSL
+           sudo apt install -y qtbase5-dev
+      if: matrix.os == 'ubuntu-latest'
+    - name: download liblsl (Windows)
+      run: |
+           Invoke-WebRequest -Uri $Env:LSL_URL/$Env:LSL_RELEASE$Env:LSL_RELEASE_SUFFIX/liblsl-$Env:LSL_RELEASE-Win64.7z -o liblsl.7z
+           7z x liblsl.7z -oLSL
+      if: matrix.os == 'windows-latest'
+    - name: download liblsl (MacOS)
+      run: |
+           curl -L ${LSL_URL}/${LSL_RELEASE}${LSL_RELEASE_SUFFIX}/liblsl-${LSL_RELEASE}-OSX64.tar.bz2 -o liblsl.tar.bz2
+           mkdir LSL
+           tar -xvf liblsl.tar.bz2 -C LSL
+           brew install qt
+           echo '::set-env name=CMAKE_PREFIX_PATH::/usr/local/opt/qt'
+      if: matrix.os == 'macOS-latest'
+    - name: Install Qt (Windows)
+      uses: jurplel/install-qt-action@v2
+      if: matrix.os == 'windows-latest'
+    - name: Configure CMake
+      shell: bash
+      run: |
+           cmake --version
+           cmake -E make_directory build
+           cd build
+           find $PWD/../LSL
+           cmake -DLSL_INSTALL_ROOT=$PWD/../ ..
+    - name: make
+      run: cmake --build build --config Release -j --target install
+      #    - name: pack everything up
+      #      shell: bash
+      #      run: cd build; mkdir upload; cpack -C Release -R $PWD/upload; rm -rf upload/_CPack_Packages/;
+    - uses: actions/upload-artifact@master
+      with:
+        name: pkg-${{ matrix.os }}
+        path: build/install
