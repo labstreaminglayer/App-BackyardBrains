@@ -54,6 +54,10 @@ jobs:
     - name: Install Qt (Windows)
       uses: jurplel/install-qt-action@v2
       if: matrix.os == 'windows-latest'
+    - name: Install HIDAPI (Ubuntu)
+      run: |
+          sudo apt-get install -y libhidapi-dev
+      if: matrix.os == 'ubuntu-latest'
     - name: Configure CMake
       shell: bash
       run: |
