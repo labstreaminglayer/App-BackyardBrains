@@ -37,123 +37,119 @@ typedef enum
 namespace BackyardBrains {
     class RecordingManager;
 
-        typedef struct HIDManagerDevice {
-
-            HIDBoardType deviceType;
-            std::string devicePath;
-            std::string serialNumber;
-
-        }HIDManagerDevice;
-
-
+    typedef struct HIDManagerDevice {
+        HIDBoardType deviceType;
+        std::string devicePath;
+        std::string serialNumber;
+    }HIDManagerDevice;
 
     class HIDUsbManager
     {
-        public:
-            HIDUsbManager();
+    public:
+        HIDUsbManager();
 
-            // scan
-            void getAllDevicesList();
-            std::list<HIDManagerDevice> list;
-            int isBoardTypeAvailable(HIDBoardType bt);
+        // scan
+        void getAllDevicesList();
+        std::list<HIDManagerDevice> list;
+        int isBoardTypeAvailable(HIDBoardType bt);
 
-            // open / close
-            int openDevice(HIDBoardType hidBoardType);  // RecordingManager * managerin, 
-            void closeDevice();
+        // open / close
+        int openDevice(HIDBoardType hidBoardType);  // RecordingManager * managerin,
+        void closeDevice();
 
-            //read device
-            int readDevice(int32_t * obuffer);
-            int readOneBatch(int32_t * obuffer);
-            void askForCapabilities();
-            void askForMaximumRatings();
-            void askForStateOfPowerRail();
-            void askForBoard();
-            void askForRTRepeat();
-            void pressKey(int keyIndex);
-            void releaseKey(int keyIndex);
+        //read device
+        int readDevice(int32_t * obuffer);
+        int readOneBatch(int32_t * obuffer);
+        void askForCapabilities();
+        void askForMaximumRatings();
+        void askForStateOfPowerRail();
+        void askForBoard();
+        void askForRTRepeat();
+        void pressKey(int keyIndex);
+        void releaseKey(int keyIndex);
 
-            //write to device
-            int writeToDevice(const unsigned char *ptr, size_t len);
-            void setNumberOfChannelsAndSamplingRate(int numberOfChannels, int samplingRate);
-            void stopDevice();
-            // void putInFirmwareUpdateMode();
+        //write to device
+        int writeToDevice(const unsigned char *ptr, size_t len);
+        void setNumberOfChannelsAndSamplingRate(int numberOfChannels, int samplingRate);
+        void stopDevice();
+        // void putInFirmwareUpdateMode();
 
-            //properties and state
-            int currentlyConnectedHIDBoardType();
-            int maxSamplingRate();
-            int maxNumberOfChannels();
-            int numberOfChannels();
-            std::string errorString;
-            bool deviceOpened();
-            int32_t *mainCircularBuffer;
-            int addOnBoardPressent();
-            bool isRTRepeating();
-            void swapRTRepeat();
-            int powerRailIsState();//HID_POWER_ON, HID_POWER_OFF, HID_POWER_UNKNOWN
-            std::string firmwareVersion;
-            std::string hardwareVersion;
-            std::string hardwareType;
-        protected:
+        //properties and state
+        int currentlyConnectedHIDBoardType();
+        int maxSamplingRate();
+        int maxNumberOfChannels();
+        int numberOfChannels();
+        std::string errorString;
+        bool deviceOpened();
+        int32_t *mainCircularBuffer;
+        int addOnBoardPressent();
+        bool isRTRepeating();
+        void swapRTRepeat();
+        int powerRailIsState();//HID_POWER_ON, HID_POWER_OFF, HID_POWER_UNKNOWN
+        std::string firmwareVersion;
+        std::string hardwareVersion;
+        std::string hardwareType;
 
-            void startDevice();
-            // RecordingManager *_manager;
-            char circularBuffer[SIZE_OF_CIRC_BUFFER];
-            std::thread t1;
-            int mainHead;
-            int mainTail;
-            int cBufHead;
-            int cBufTail;
-            hid_device *handle;
-            int _numberOfChannels;
-            int _samplingRate;
-            int _powerRailState=-1;//Power rail is ON 1, OFF 0, unknown -1
-            bool returnTailForOneAndCheck();
-            bool checkIfNextByteExist();
-            bool areWeAtTheEndOfFrame();
-            bool checkIfHaveWholeFrame();
-            void readThread(HIDUsbManager * ref);
-            bool _deviceConnected;
-            bool prepareForDisconnect;
-            bool hidAccessBlock;
+    protected:
+        void startDevice();
+        // RecordingManager *_manager;
+        char circularBuffer[SIZE_OF_CIRC_BUFFER];
+        std::thread t1;
+        int mainHead;
+        int mainTail;
+        int cBufHead;
+        int cBufTail;
+        hid_device *handle;
+        int _numberOfChannels;
+        int _samplingRate;
+        int _powerRailState=-1;//Power rail is ON 1, OFF 0, unknown -1
+        bool returnTailForOneAndCheck();
+        bool checkIfNextByteExist();
+        bool areWeAtTheEndOfFrame();
+        bool checkIfHaveWholeFrame();
+        void readThread(HIDUsbManager * ref);
+        bool _deviceConnected;
+        bool prepareForDisconnect;
+        bool hidAccessBlock;
 
-            bool writeWantsToAccessHID;
-            bool readGrantsAccessToWriteToHID;
-            bool writeWantsToReleaseAccessHID;
-            bool readGrantsReleaseAccessToWriteToHID;
+        bool writeWantsToAccessHID;
+        bool readGrantsAccessToWriteToHID;
+        bool writeWantsToReleaseAccessHID;
+        bool readGrantsReleaseAccessToWriteToHID;
 
-            int currentAddOnBoard;
-            bool _rtReapeating;
-            bool restartDevice;
-            int maxSamples;
-            int currentConnectedDevicePID;
-            void testEscapeSequence(unsigned int newByte, int offset);
-            void executeOneMessage(std::string typeOfMessage, std::string valueOfMessage, int offsetin);
-            void executeContentOfMessageBuffer(int offset);
-            int escapeSequenceDetectorIndex;
-            bool weAreInsideEscapeSequence;
-            char messagesBuffer[SIZE_OF_MESSAGES_BUFFER];//contains payload inside escape sequence
-            int messageBufferIndex;
-            unsigned int escapeSequence[ESCAPE_SEQUENCE_LENGTH];
-            unsigned int endOfescapeSequence[ESCAPE_SEQUENCE_LENGTH];
-            unsigned int tempHeadAndTailDifference;//used for precise events reference
-            void enumerateDevicesForVIDAndPID(int invid, int inpid);
-
-
-            bool checkIfKeyWasPressed(int keyIndex);
-            bool checkIfKeyWasReleased(int keyIndex);
+        int currentAddOnBoard;
+        bool _rtReapeating;
+        bool restartDevice;
+        int maxSamples;
+        int currentConnectedDevicePID;
+        void testEscapeSequence(unsigned int newByte, int offset);
+        void executeOneMessage(std::string typeOfMessage, std::string valueOfMessage, int offsetin);
+        void executeContentOfMessageBuffer(int offset);
+        int escapeSequenceDetectorIndex;
+        bool weAreInsideEscapeSequence;
+        char messagesBuffer[SIZE_OF_MESSAGES_BUFFER];//contains payload inside escape sequence
+        int messageBufferIndex;
+        unsigned int escapeSequence[ESCAPE_SEQUENCE_LENGTH];
+        unsigned int endOfescapeSequence[ESCAPE_SEQUENCE_LENGTH];
+        unsigned int tempHeadAndTailDifference;//used for precise events reference
+        void enumerateDevicesForVIDAndPID(int invid, int inpid);
 
 
-            #if defined(_WIN32)
-            KeyForJoystick keysForJoystick[8];
+        bool checkIfKeyWasPressed(int keyIndex);
+        bool checkIfKeyWasReleased(int keyIndex);
 
-            #endif
 
-            void setJoystickLeds(uint8_t state);
-            void turnONJoystickLed(int ledIndex);
-            void turnOFFJoystickLed(int ledIndex);
-        private:
-            uint8_t previousButtonState;
-            uint8_t currentButtonState;
+        #if defined(_WIN32)
+        KeyForJoystick keysForJoystick[8];
+
+        #endif
+
+        void setJoystickLeds(uint8_t state);
+        void turnONJoystickLed(int ledIndex);
+        void turnOFFJoystickLed(int ledIndex);
+    private:
+        uint8_t previousButtonState;
+        uint8_t currentButtonState;
     }; //class end
 
 }//namespace

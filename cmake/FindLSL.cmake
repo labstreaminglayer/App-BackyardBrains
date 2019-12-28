@@ -21,6 +21,12 @@ if(NOT TARGET LSL::lsl)
     # when building out of tree LSL_INSTALL_ROOT should to be specified on the
     # cmd line to find a precompiled liblsl
     file(TO_CMAKE_PATH "${LSL_INSTALL_ROOT}" LSL_INSTALL_ROOT)
+    if(DEFINED ENV{LSL_INSTALL_ROOT})
+        list(APPEND LSL_INSTALL_ROOT $ENV{LSL_INSTALL_ROOT})
+    else()
+        message(STATUS "No LSL_INSTALL_ROOT ENV")
+    endif()
+    message(STATUS ${LSL_INSTALL_ROOT})
     list(APPEND LSL_INSTALL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../LSL/liblsl/build/install")
     find_package(LSL
         HINTS

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>242</width>
-    <height>138</height>
+    <height>156</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,13 +16,16 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QFormLayout" name="formLayout_2">
     <item row="1" column="0">
-     <widget class="QLabel" name="label_name">
+     <widget class="QLabel" name="label_device">
       <property name="text">
-       <string>devicePath</string>
+       <string>Device:</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="0" colspan="2">
+    <item row="1" column="1">
+     <widget class="QComboBox" name="comboBox_device"/>
+    </item>
+    <item row="2" column="0" colspan="2">
      <widget class="QPushButton" name="linkButton">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -35,23 +38,6 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="input_name"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_device">
-      <property name="text">
-       <string>Device parameter</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QSpinBox" name="input_device">
-      <property name="maximum">
-       <number>400</number>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -60,7 +46,7 @@
      <x>0</x>
      <y>0</y>
      <width>242</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
