@@ -1,12 +1,31 @@
+![Build Status](https://github.com/labstreaminglayer/App-BackyardBrains/workflows/Cpp-CI/badge.svg)
+
 # BackyardBrains LSL Interface
 
 This application streams data to LSL from a BackyardBrains SpikerBoxPro device connected via USB.
-This is a work-in-progress and not ready yet!
+This is an untested work-in-progress!
+
+## Use
+
+When you first run this application, it should scan for appropriate devices connected via
+USB and list them in the dropdown box. Select the device you want to stream and click "Link".
+
+It should now be streaming data over LSL. To receive the data in another application,
+see the [LabStreamingLayer documentation](https://labstreaminglayer.readthedocs.io/index.html).
 
 ## Application Architecture
 
 The application loosely follows the [standard LSL App Template](https://github.com/labstreaminglayer/AppTemplate_cpp_qt).
-In this application, 
+
+## Download
+
+See the [releases page](https://github.com/labstreaminglayer/App-BackyardBrains/releases).
+(In progress)
+
+# Build
+
+This application can be built following general
+[LSL Application build instructions](https://labstreaminglayer.readthedocs.io/dev/app_build.html).
 
 ## Dependencies
 
@@ -27,16 +46,6 @@ In this application,
         * Create LSL folder in this repository.
         * Extract contents of 7zip file above into LSL folder.
         * cmake will require LSL_INSTALL_ROOT=LSL
-
-## Download
-
-See the [releases page](https://github.com/labstreaminglayer/App-BackyardBrains/releases).
-(In progress)
-
-# Build
-
-This application can be built following general
-[LSL Application build instructions](https://labstreaminglayer.readthedocs.io/dev/app_build.html).
 
 If you have hidapi installed somewhere other than the default location then you can tell CMake where to find that folder with the cmake argument `HIDAPI_ROOT_DIR=path/to/hidapi_lib_and_h`
 
