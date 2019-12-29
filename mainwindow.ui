@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>BestPracticesGUI Connector</string>
+   <string>BackyardBrains LSL</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QFormLayout" name="formLayout_2">

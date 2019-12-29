@@ -6,3 +6,4 @@ ui_*.h
 /CMakeSettings.json
 /out/
 /hidapi-win/
+.DS_Store

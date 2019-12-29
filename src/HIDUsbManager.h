@@ -26,6 +26,7 @@ typedef enum
 #include <iostream>
 #include "constants.h"
 #include <thread>
+#include "native/KeyboardGenerator.h"
 
 #ifdef _WIN32
 	#include <windows.h>

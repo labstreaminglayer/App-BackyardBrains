@@ -117,7 +117,6 @@ void MainWindow::refresh_devices() {
  * the shutdown flag indicates that the recording should stop as soon as possible */
 void recording_thread_function(const BackyardBrains::HIDManagerDevice _device, std::atomic<bool> &shutdown)
 {
-	int64_t _pos = 0;
 	int _sampleRate = DEFAULT_SAMPLE_RATE;
 	int _numOfHidChannels = 2;
 	bool _HIDOpened = false;
