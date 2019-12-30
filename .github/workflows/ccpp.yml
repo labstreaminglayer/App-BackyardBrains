@@ -75,7 +75,7 @@ jobs:
            cmake -E make_directory build
            cd build
            find $PWD/../LSL
-           cmake -DLSL_INSTALL_ROOT=$PWD/../ ..
+           cmake -DLSL_INSTALL_ROOT=$PWD/../ -DLSL_UNIXFOLDERS=Off ..
     - name: make
       run: cmake --build build --config Release -j --target install
       #    - name: pack everything up
