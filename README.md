@@ -15,7 +15,9 @@ see the [LabStreamingLayer documentation](https://labstreaminglayer.readthedocs.
 
 ### Run Dependencies
 
-The Windows and Mac zip files come with all of the dependencies you need.
+The Windows and Mac zip files should come with all of the dependencies you need. However, it seems at least the windows package is missing a couple pieces:
+    * [VisualC runtime](https://aka.ms/vs/16/release/vc_redist.x64.exe)
+    * [hidapi.dll from this zip](https://github.com/libusb/hidapi/releases/latest/download/hidapi-win.zip)
 On Linux you'll have to install them yourself: `sudo apt-get install -y libhidapi-dev qt5-default`
 
 ## Application Architecture
@@ -45,7 +47,7 @@ This application can be built following general
     * MacOS:
         * `brew install hidapi`
 3. LSL
-    # Download from the GitHub release page: https://github.com/sccn/liblsl/releases/latest
+    * **Download from the GitHub release page: https://github.com/sccn/liblsl/releases/latest**
     * Create LSL folder in this repository.
     * Extract contents of 7zip file above into LSL folder.
     * cmake will require `-DLSL_INSTALL_ROOT=LSL`
