@@ -199,8 +199,10 @@ if(HIDAPI_FOUND)
     if(NOT TARGET HIDAPI::hidapi)
         add_library(HIDAPI::hidapi UNKNOWN IMPORTED)
         set_target_properties(
-            HIDAPI::hidapi PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-                                      IMPORTED_LOCATION ${HIDAPI_LIBRARY})
+            HIDAPI::hidapi PROPERTIES 
+                IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+                IMPORTED_LOCATION ${HIDAPI_LIBRARY}
+        )
         set_property(
             TARGET HIDAPI::hidapi PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES
                                            Threads::Threads)
@@ -208,13 +210,24 @@ if(HIDAPI_FOUND)
 endif()
 
 if(HIDAPI_libusb_FOUND AND NOT TARGET HIDAPI::hidapi-libusb)
-    add_library(HIDAPI::hidapi-libusb UNKNOWN IMPORTED)
-    set_target_properties(
-        HIDAPI::hidapi-libusb
-        PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES "C" IMPORTED_LOCATION
-                   ${HIDAPI_LIBUSB_LIBRARY})
-    set_property(TARGET HIDAPI::hidapi-libusb
-                 PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES Threads::Threads)
+    add_library(HIDAPI::hidapi-libusb SHARED IMPORTED)
+    
+    # On Windows, the IMPORTED_LIB is the .lib, and the IMPORTED_LOCATION (below) is the .dll
+    get_filename_component(libext ${HIDAPI_LIBUSB_LIBRARY} EXT)
+    if(libext STREQUAL ".lib")
+        set_target_properties(HIDAPI::hidapi-libusb
+            PROPERTIES
+                IMPORTED_IMPLIB ${HIDAPI_LIBUSB_LIBRARY}
+        )
+        string(REPLACE ".lib" ".dll" HIDAPI_LIBUSB_LIBRARY ${HIDAPI_LIBUSB_LIBRARY})
+    endif()
+
+    set_target_properties(HIDAPI::hidapi-libusb PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        IMPORTED_LINK_INTERFACE_LIBRARIES Threads::Threads
+        INTERFACE_INCLUDE_DIRECTORIES "${HIDAPI_INCLUDE_DIR}"
+        IMPORTED_LOCATION "${HIDAPI_LIBUSB_LIBRARY}"
+    )
 endif()
 
 if(HIDAPI_hidraw_FOUND AND NOT TARGET HIDAPI::hidapi-hidraw)

@@ -87,10 +87,11 @@ set(THIRD_PARTY_DLLS
 )
 foreach(_lib ${THIRD_PARTY_DLLS})
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:${_lib}>
             $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 endforeach()
+
 
 installLSLApp(${PROJECT_NAME})
 installLSLAuxFiles(${PROJECT_NAME}
