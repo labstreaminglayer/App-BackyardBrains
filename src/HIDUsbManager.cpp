@@ -149,17 +149,17 @@ namespace BackyardBrains {
         t1 = std::thread(&HIDUsbManager::readThread, this, this);
         t1.detach();
 
-        //std::cout << "askForCapabilities" << std::endl;
-        //askForCapabilities();//ask for firmware version etc.
+        std::cout << "askForCapabilities" << std::endl;
+        askForCapabilities();//ask for firmware version etc.
 
-		//std::cout << "askForMaximumRatings" << std::endl;
-        //askForMaximumRatings(); //ask for sample rate and number of channels
+		std::cout << "askForMaximumRatings" << std::endl;
+        askForMaximumRatings(); //ask for sample rate and number of channels
 
         //askForRTRepeat();//ask if RT board is repeating stimmulation
         
         //set number of channels and sampling rate on micro (this will not work with firmware V0.1)
-		//std::cout << "setNumberOfChannelsAndSamplingRate(2, maxSamplingRate())" << std::endl;
-        //setNumberOfChannelsAndSamplingRate(2, maxSamplingRate());
+		std::cout << "setNumberOfChannelsAndSamplingRate(2, maxSamplingRate())" << std::endl;
+        setNumberOfChannelsAndSamplingRate(2, maxSamplingRate());
 
         //send start command to micro
 		std::cout << "startDevice" << std::endl;
@@ -691,18 +691,12 @@ namespace BackyardBrains {
             catch(std::exception &e)
             {
                 numberOfFrames = -1;
-#ifdef LOG_HID_SCANNING
-                // Log::msg("HID - Error on read 1: %s", e.what() );
-#endif
-
+                std::cout << "HID - Error on read 1: " << e.what() << std::endl;
             }
             catch(...)
             {
                 numberOfFrames = -1;
-
-#ifdef LOG_HID_SCANNING
-                // Log::msg("HID - Error on read 2");
-#endif
+                std::cout << "HID - Error on read 2" << std::endl;
             }
 
 
@@ -710,7 +704,7 @@ namespace BackyardBrains {
             {
                 ref->prepareForDisconnect = true;
             }
-            //std::cout<<numberOfFrames<<"-";
+            //std::cout << numberOfFrames << std::endl;
             for(int i=0;i<numberOfFrames;i++)
             {
                 //we copy here head position since we dont want to cut the frame
@@ -744,9 +738,8 @@ namespace BackyardBrains {
         if(prepareForDisconnect)
         {
 
-                readGrantsAccessToWriteToHID = true;
-
-                readGrantsReleaseAccessToWriteToHID = true;
+            readGrantsAccessToWriteToHID = true;
+            readGrantsReleaseAccessToWriteToHID = true;
             ref->stopDevice();
 
             try {
@@ -754,17 +747,11 @@ namespace BackyardBrains {
             }
             catch(std::exception &e)
             {
-#ifdef LOG_HID_SCANNING
-                // Log::msg("HID - Error while closing device: %s", e.what());
-#endif
-                // hid_free_enumeration(devs);
+                std::cout << "HID - Error while closing device: " << e.what() << std::endl;
             }
             catch(...)
             {
-
-#ifdef LOG_HID_SCANNING
-                // Log::msg("HID - Error while closing devices");
-#endif
+                std::cout << "HID - Error while closing devices" << std::endl;
                 //hid_free_enumeration(devs);
             }
             prepareForDisconnect = false;
@@ -812,19 +799,20 @@ namespace BackyardBrains {
         catch(std::exception &e)
         {
             size = -1;
+            std::cout << "Error on read 3: " << e.what() << std::endl;
             // Log::msg("HID - Error: on read 3: %s", e.what() );
         }
         catch(...)
         {
             size = -1;
-            //std::cout<<"Error on read 4";
+            std::cout << "Error on read 4" << std::endl;
             // Log::msg("HID - Error: on read 4");
         }
 
 
         if (size == 0)
         {
-            //std::cout<<"No HID data";
+            std::cout << "No HID data" << std::endl;
 #ifdef LOG_HID_SCANNING
             // Log::msg("HID - Error: No HID data");
 #endif
@@ -833,7 +821,7 @@ namespace BackyardBrains {
         }
         if (size < 0)
         {
-            //std::cout<<"Error HID: Unable to read\n";
+            std::cout << "Error HID: Unable to read\n" << std::endl;
             #ifdef LOG_HID_SCANNING
                 // Log::msg("HID - Error: Unable to read\n");
             #endif
@@ -880,7 +868,7 @@ namespace BackyardBrains {
             {
                 if(checkIfHaveWholeFrame() && obufferIndex<1000)
                 {
-                    // std::cout<<"Number of frames: "<< numberOfFrames<<"\n";
+                    // std::cout<<"Number of frames: "<< numberOfFrames << std::endl;
                     numberOfFrames++;
                     for(int channelind=0;channelind<_numberOfChannels;channelind++)
                     {
@@ -1048,7 +1036,7 @@ namespace BackyardBrains {
                     // your new String
 
                     std::string nameOfHID(wname.begin(), wname.end());
-                      std::cout<<"HID name: "<<nameOfHID<<"\n";
+                    std::cout << "HID name: " << nameOfHID << std::endl;
 
                     list.push_back(newDevice);
                 }
@@ -1058,12 +1046,12 @@ namespace BackyardBrains {
         }
         catch(std::exception &e)
         {
-            std::cout<<"Error while scanning VID/PID of devices 2: "<<e.what();
+            std::cout << "Error while scanning VID/PID of devices 2: "<<e.what() << std::endl;
             // hid_free_enumeration(devs);
         }
         catch(...)
         {
-            std::cout<<"Error while scanning VID/PID of devices";
+            std::cout<<"Error while scanning VID/PID of devices" << std::endl;
             //hid_free_enumeration(devs);
         }
 
@@ -1227,7 +1215,7 @@ namespace BackyardBrains {
     void HIDUsbManager::putInFirmwareUpdateMode()
     {
         #if defined(_WIN32)
-            std::cout<<"Put MSP into firmware update\n";
+            std::cout<<"Put MSP into firmware update\n" << std::endl;
              std::stringstream sstm;
             sstm << "update:;\n";
             writeToDevice((unsigned char*)(sstm.str().c_str()),sstm.str().length());
@@ -1268,7 +1256,7 @@ namespace BackyardBrains {
             writeWantsToAccessHID = true;
             while(!readGrantsAccessToWriteToHID)
             {
-				std::cout << "HID Write waiting to get access..." << std::endl;
+				// std::cout << "HID Write waiting to get access..." << std::endl;
             }
 
             res = hid_write(handle, outbuff, 64);
@@ -1295,7 +1283,7 @@ namespace BackyardBrains {
             std::stringstream sstm;//variable for log
             sstm << "Could not write to device. Error reported was: " << hid_error(handle);
             errorString = sstm.str();
-			std::cout << "Error HID write: \n" << errorString;
+			std::cout << "Error HID write: \n" << errorString << std::endl;
             // Log::msg("Error HID write: %s",sstm.str().c_str());
         }
         return 0;

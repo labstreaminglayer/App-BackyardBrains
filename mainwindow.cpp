@@ -183,20 +183,25 @@ void recording_thread_function(
 
 	while (!shutdown && _hidUsbManager.deviceOpened()) {
 		// get interleaved data for all channels
-		int samplesRead = _hidUsbManager.readDevice(buffer.data());
-		std::cout << "samplesRead = " << samplesRead << std::endl;
+		int framesRead = _hidUsbManager.readDevice(buffer.data());
+		//std::cout << "framesRead = " << framesRead << std::endl;
 
-		if (samplesRead == 0) { continue; }
-		if (samplesRead != -1) {
+		if (framesRead == 0) { continue; }
+		if (framesRead != -1) {
 			// Send data from buffer to LSL
-			outlet.push_chunk_multiplexed(buffer.data(), samplesRead);
+			outlet.push_chunk_multiplexed(buffer.data(), _numOfHidChannels * framesRead);
 		}
 	}
 
 	std::cout << "Shutdown received or device not opened." << std::endl;
 
-	buffer.clear();
 	_hidUsbManager.closeDevice();
+	while (_hidUsbManager.deviceOpened())
+	{
+		// Wait out the device cleanup.
+		std::cout << "Wait out device cleanup..." << std::endl;
+	}
+	buffer.clear();
 }
 
 
