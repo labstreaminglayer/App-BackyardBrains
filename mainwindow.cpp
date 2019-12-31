@@ -173,31 +173,43 @@ void recording_thread_function(
 	}
 
 	//: create an outlet and a send buffer
-	lsl::stream_info info(_device.devicePath, "ExG", _numOfHidChannels, _sampleRate, lsl::cf_int32,
+	lsl::stream_info info(_device.devicePath, "ExG", _numOfHidChannels, _sampleRate, lsl::cf_int16,
 		_device.serialNumber);
 	lsl::stream_outlet outlet(info);
 	std::cout << "Created outlet with type ExG and name " << _device.devicePath << std::endl;
 
 	uint32_t len = 30000;
 	std::vector<int32_t> buffer(_numOfHidChannels * len);
+	std::vector<std::vector<int16_t>> frames_vec;
 
 	while (!shutdown && _hidUsbManager.deviceOpened()) {
 		// get interleaved data for all channels
 		int framesRead = _hidUsbManager.readDevice(buffer.data());
-		//std::cout << "framesRead = " << framesRead << std::endl;
+		// std::cout << "framesRead = " << framesRead << std::endl;
 
 		if (framesRead == 0) { continue; }
 		if (framesRead != -1) {
+			// We are going to make a probably-unnecessary copy of the data here
+			// just to be sure that we're correctly separating the samples.
+			frames_vec.resize(framesRead);
+			for (int i = 0; i < framesRead; i++) {
+				// make separate buffer for every frame
+				frames_vec[i].resize(_numOfHidChannels);
+				for (int chan = 0; chan < _numOfHidChannels; chan++) {
+					frames_vec[i][chan] = buffer[i * _numOfHidChannels + chan];
+				}
+			}
+			outlet.push_chunk(frames_vec);
+
 			// Send data from buffer to LSL
-			outlet.push_chunk_multiplexed(buffer.data(), _numOfHidChannels * framesRead);
+			// outlet.push_chunk_multiplexed(buffer.data(), _numOfHidChannels * framesRead);
 		}
 	}
 
 	std::cout << "Shutdown received or device not opened." << std::endl;
 
 	_hidUsbManager.closeDevice();
-	while (_hidUsbManager.deviceOpened())
-	{
+	while (_hidUsbManager.deviceOpened()) {
 		// Wait out the device cleanup.
 		std::cout << "Wait out device cleanup..." << std::endl;
 	}
