@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent, const char *config_file)
 	});
 	connect(ui->linkButton, &QPushButton::clicked, this, &MainWindow::toggleRecording);
 
-    refresh_devices();
+	refresh_devices();
 
 	//: At the end of the constructor, we load the supplied config file or find it
 	//: in one of the default paths
@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent, const char *config_file)
 void MainWindow::load_config(const QString &filename) {
 	QSettings settings(filename, QSettings::Format::IniFormat);
 	// TODO: Iterate over items in ui->comboBox_device, trying to find text match with
-    // settings.value("BYB/path", "???").toString()
+	// settings.value("BYB/path", "???").toString()
 }
 
 
@@ -95,14 +95,15 @@ void MainWindow::closeEvent(QCloseEvent *ev) {
 
 
 void MainWindow::refresh_devices() {
-    BackyardBrains::HIDUsbManager _hidUsbManager;
-    _hidUsbManager.getAllDevicesList();
-    _devices.clear();
-    _devices = std::vector<BackyardBrains::HIDManagerDevice>{ std::begin(_hidUsbManager.list), std::end(_hidUsbManager.list) };
-    ui->comboBox_device->clear();
-    for(BackyardBrains::HIDManagerDevice dev: _devices){
-        ui->comboBox_device->addItem(QString::fromStdString(dev.devicePath));
-    }
+	BackyardBrains::HIDUsbManager _hidUsbManager;
+	_hidUsbManager.getAllDevicesList();
+	_devices.clear();
+	_devices = std::vector<BackyardBrains::HIDManagerDevice>{
+		std::begin(_hidUsbManager.list), std::end(_hidUsbManager.list)};
+	ui->comboBox_device->clear();
+	for (BackyardBrains::HIDManagerDevice dev : _devices) {
+		ui->comboBox_device->addItem(QString::fromStdString(dev.devicePath));
+	}
 }
 
 
@@ -115,62 +116,87 @@ void MainWindow::refresh_devices() {
  * - a reference to an `std::atomic<bool>`
  *
  * the shutdown flag indicates that the recording should stop as soon as possible */
-void recording_thread_function(const BackyardBrains::HIDManagerDevice _device, std::atomic<bool> &shutdown)
-{
+void recording_thread_function(
+	const BackyardBrains::HIDManagerDevice _device, std::atomic<bool> &shutdown) {
 	int _sampleRate = DEFAULT_SAMPLE_RATE;
 	int _numOfHidChannels = 2;
 	bool _HIDOpened = false;
 	clock_t timerUSB = 0;
 
 	// Create an instance of the HIDUsbManager that will live throughout the thread.
+	std::cout << "Creating instance of HIDUsbManager" << std::endl;
 	BackyardBrains::HIDUsbManager _hidUsbManager;
 
-    // Open the device and get basic info.
-    while (!shutdown && !_HIDOpened) {
-        // Scan for devices, rate limit to once per second.
-        try {
-            clock_t end = clock();
-            double elapsed_secs = double(end - timerUSB) / CLOCKS_PER_SEC;
-            if (elapsed_secs > 1) {
-                timerUSB = end;
-                _hidUsbManager.getAllDevicesList();
-                _numOfHidChannels = _hidUsbManager.numberOfChannels();
-            }
-        } catch (int e) { std::cout << "Error HID scan\n"; }
+	// Open the device and get basic info.
+	std::cout << "Attempting to open selected device..." << std::endl;
+	while (!shutdown && !_HIDOpened) {
 
-        // If necessary, open the device.
-        if (!_hidUsbManager.deviceOpened()) {
-            if (_hidUsbManager.openDevice(_device.deviceType) == -1) {
-                continue;
-            }
-        }
-        _sampleRate = _hidUsbManager.maxSamplingRate();
-        _numOfHidChannels = _hidUsbManager.numberOfChannels();
-        // std::cout << "HID Frequency: " << frequency << " Chan:" << _numOfHidChannels << " Samp:" << _sampleRate << "\n";
-        _HIDOpened = true;
-    }
+		// Scan for devices, rate limit to once per second.
+		try {
+			clock_t end = clock();
+			double elapsed_secs = double(end - timerUSB) / CLOCKS_PER_SEC;
+			if (elapsed_secs > 1) {
+				timerUSB = end;
+				_hidUsbManager.getAllDevicesList();
+				_numOfHidChannels = _hidUsbManager.numberOfChannels();
+			}
+		} catch (int e) { std::cout << "Error HID scan\n"; }
+		std::cout << "HID found " << _hidUsbManager.list.size() << " devices." << std::endl;
 
-	//: create an outlet and a send buffer
-	lsl::stream_info info(_device.devicePath, "ExG", _numOfHidChannels, _sampleRate, lsl::cf_int32, _device.serialNumber);
-	lsl::stream_outlet outlet(info);
-    uint32_t len = 30000;
-	std::vector<int32_t> buffer(_numOfHidChannels*len);
+		// If necessary, open the device.
+		if (!_hidUsbManager.deviceOpened()) {
+			std::cout << "Attempting to open device..." << std::endl;
+			if (_device.deviceType == HID_BOARD_TYPE_NONE) {
+				std::cout << " with type HID_BOARD_TYPE_NONE" << std::endl;
+			} else if (_device.deviceType == HID_BOARD_TYPE_MUSCLE) {
+				std::cout << " with type HID_BOARD_TYPE_MUSCLE" << std::endl;
+			} else if (_device.deviceType == HID_BOARD_TYPE_NEURON) {
+				std::cout << " with type HID_BOARD_TYPE_NEURON" << std::endl;
+			}
 
-	while (!shutdown && _hidUsbManager.deviceOpened()) {
-        // get interleaved data for all channels
-        int samplesRead = _hidUsbManager.readDevice(buffer.data());
+			int err = _hidUsbManager.openDevice(_device.deviceType);
+			if (err == -1) {
+				std::cout << "Successfully opened HID" << std::endl;
+			} else {
+				std::cout << "Encountered error " << err << std::endl;
+			}
+		} else {
+			std::cout << "Device already opened." << std::endl;
+		}
 
-        if (samplesRead == 0) {
-            continue;
-        }
-        if (samplesRead != -1) {
-            // Send data from buffer to LSL
-            outlet.push_chunk_multiplexed(buffer.data(), samplesRead);
-        }
+		_HIDOpened = _hidUsbManager.deviceOpened();
+		if (_HIDOpened) {
+			_sampleRate = _hidUsbManager.maxSamplingRate();
+			_numOfHidChannels = _hidUsbManager.numberOfChannels();
+			std::cout << "HID Chan:" << _numOfHidChannels << " Samp:" << _sampleRate << "\n";
+		}
 	}
 
+	//: create an outlet and a send buffer
+	lsl::stream_info info(_device.devicePath, "ExG", _numOfHidChannels, _sampleRate, lsl::cf_int32,
+		_device.serialNumber);
+	lsl::stream_outlet outlet(info);
+	std::cout << "Created outlet with type ExG and name " << _device.devicePath << std::endl;
+
+	uint32_t len = 30000;
+	std::vector<int32_t> buffer(_numOfHidChannels * len);
+
+	while (!shutdown && _hidUsbManager.deviceOpened()) {
+		// get interleaved data for all channels
+		int samplesRead = _hidUsbManager.readDevice(buffer.data());
+		std::cout << "samplesRead = " << samplesRead << std::endl;
+
+		if (samplesRead == 0) { continue; }
+		if (samplesRead != -1) {
+			// Send data from buffer to LSL
+			outlet.push_chunk_multiplexed(buffer.data(), samplesRead);
+		}
+	}
+
+	std::cout << "Shutdown received or device not opened." << std::endl;
+
 	buffer.clear();
-    _hidUsbManager.closeDevice();
+	_hidUsbManager.closeDevice();
 }
 
 
@@ -184,17 +210,17 @@ void MainWindow::toggleRecording() {
 	 * to false so the recording thread doesn't quit immediately and create the
 	 * recording thread. */
 	if (!reader) {
-	    if (_devices.size() > ui->comboBox_device->currentIndex())
-        {
-            shutdown = false;
-            /*: `make_unique` allocates a new `std::thread` with our recording
-             * thread function as first parameters and all parameters to the
-             * function after that.
-             * Reference parameters have to be wrapped as a `std::ref`. */
-            reader = std::make_unique<std::thread>(
-                    &recording_thread_function, _devices.at(ui->comboBox_device->currentIndex()), std::ref(shutdown));
-            ui->linkButton->setText("Unlink");
-        }
+		if (_devices.size() > ui->comboBox_device->currentIndex()) {
+			shutdown = false;
+			/*: `make_unique` allocates a new `std::thread` with our recording
+			 * thread function as first parameters and all parameters to the
+			 * function after that.
+			 * Reference parameters have to be wrapped as a `std::ref`. */
+			std::cout << "Spawning recording thread." << std::endl;
+			reader = std::make_unique<std::thread>(&recording_thread_function,
+				_devices.at(ui->comboBox_device->currentIndex()), std::ref(shutdown));
+			ui->linkButton->setText("Unlink");
+		}
 	} else {
 		/*: Shutting a thread involves 3 things:
 		 * - setting the shutdown flag so the thread doesn't continue acquiring data

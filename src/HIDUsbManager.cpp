@@ -105,22 +105,27 @@ namespace BackyardBrains {
 
         if(hidBoardType == HID_BOARD_TYPE_MUSCLE)
         {
+			std::cout << "Attempting to open device with type HID_BOARD_TYPE_MUSCLE." << std::endl;
             handle = hid_open(BYB_VID, BYB_PID_MUSCLE_SB_PRO, NULL);
         }
         else if(hidBoardType == HID_BOARD_TYPE_NEURON)
         {
+			std::cout << "Attempting to open device with type HID_BOARD_TYPE_NEURON." << std::endl;
             handle = hid_open(BYB_VID, BYB_PID_NEURON_SB_PRO, NULL);
         }
         if (!handle) {
              sstm << "Unable to open HID USB device. Please plug in the BackyardBrains USB device and try again.";
+			std::cout << "Unable to open HID USB device. Please plug in the BackyardBrains USB device and try again." << std::endl;
             errorString = sstm.str();
 
             return -1;
         }
         currentConnectedDevicePID = hidBoardType;
 
+        std::cout << "Attempting hid_set_nonblocking." << std::endl;
         if(hid_set_nonblocking(handle, 1) == -1)
         {
+			std::cout << "HID - Nonblocking set" << std::endl;
             // Log::msg("HID - Nonblocking set");
         }
         hidAccessBlock = 0;
@@ -138,19 +143,29 @@ namespace BackyardBrains {
         messageBufferIndex =0;
         currentAddOnBoard = 0;
         _deviceConnected = true;
+
         //start thread that will periodicaly read HID
+		std::cout << "Spawning HID readThread." << std::endl;
         t1 = std::thread(&HIDUsbManager::readThread, this, this);
         t1.detach();
-        askForCapabilities();//ask for firmware version etc.
-        askForMaximumRatings(); //ask for sample rate and number of channels
+
+        //std::cout << "askForCapabilities" << std::endl;
+        //askForCapabilities();//ask for firmware version etc.
+
+		//std::cout << "askForMaximumRatings" << std::endl;
+        //askForMaximumRatings(); //ask for sample rate and number of channels
 
         //askForRTRepeat();//ask if RT board is repeating stimmulation
+        
         //set number of channels and sampling rate on micro (this will not work with firmware V0.1)
-        setNumberOfChannelsAndSamplingRate(2, maxSamplingRate());
+		//std::cout << "setNumberOfChannelsAndSamplingRate(2, maxSamplingRate())" << std::endl;
+        //setNumberOfChannelsAndSamplingRate(2, maxSamplingRate());
 
         //send start command to micro
+		std::cout << "startDevice" << std::endl;
         startDevice();
 
+        std::cout << "askForBoard" << std::endl;
         askForBoard();//ask if any board is connected
 
         return 0;
@@ -1247,18 +1262,13 @@ namespace BackyardBrains {
             outbuff[i+2] = ptr[i];
         }
         int res = 0;
-        //try{
-            // Log::msg("Before HID write with handle %d", handle);
-
-
-
-
-
+        try{
+			std::cout << "Before HID write with handle " << handle << std::endl;
             writeWantsToReleaseAccessHID = false;
             writeWantsToAccessHID = true;
             while(!readGrantsAccessToWriteToHID)
             {
-                    // Log::msg("HID Write waiting to get access");
+				std::cout << "HID Write waiting to get access..." << std::endl;
             }
 
             res = hid_write(handle, outbuff, 64);
@@ -1267,25 +1277,25 @@ namespace BackyardBrains {
             writeWantsToReleaseAccessHID = true;
             while(!readGrantsReleaseAccessToWriteToHID)
             {
-                    // Log::msg("HID Write waiting to release access");
+				std::cout << "HID Write waiting to release access..." << std::endl;
             }
             writeWantsToReleaseAccessHID = false;
 
-            // Log::msg("After HID write with res: %d", res);
-       /* }
-            catch(std::exception &e)
-            {
-                // Log::msg("writeToDevice First exception: %s", e.what() );
-            }
-            catch(...)
-            {
-                // Log::msg("writeToDevice All exception");
-            }*/
+            std::cout << "After HID write with res: " << res << std::endl;
+        }
+        catch(std::exception &e)
+        {
+            std::cout << "writeToDevice First exception: " << e.what() << std::endl;
+        }
+        catch(...)
+        {
+		    std::cout << "writeToDevice All exception" << std::endl;
+        }
         if (res < 0) {
             std::stringstream sstm;//variable for log
             sstm << "Could not write to device. Error reported was: " << hid_error(handle);
             errorString = sstm.str();
-            //std::cout<<"Error HID write: \n"<<sstm.str();
+			std::cout << "Error HID write: \n" << errorString;
             // Log::msg("Error HID write: %s",sstm.str().c_str());
         }
         return 0;

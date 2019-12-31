@@ -57,7 +57,7 @@ else()
     )
 endif()
 
-add_executable(${PROJECT_NAME} MACOSX_BUNDLE WIN32
+add_executable(${PROJECT_NAME} MACOSX_BUNDLE # WIN32
     ${PROJECT_SOURCES}
 )
 
