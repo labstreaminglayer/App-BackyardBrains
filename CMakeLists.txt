@@ -6,7 +6,14 @@ project(BackyardBrains
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(LSL REQUIRED)
+find_package(LSL REQUIRED
+      HINTS ${LSL_INSTALL_ROOT}                                   # User-provided option
+      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/build/"         # Defaults
+      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/build/install"
+      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/out/install/x64-Debug"  # Some defaults for windows visual studio
+      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/out/install/x64-Release"
+      PATH_SUFFIXES share/LSL
+)
 
 #: Needed for ui_XY.h files
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
