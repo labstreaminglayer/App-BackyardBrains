@@ -106,3 +106,9 @@ installLSLAuxFiles(${PROJECT_NAME}
 )
 
 LSLGenerateCPackConfig()
+
+option(BYB_FORCE_RELEASE "<help_text>" FALSE)
+if(WIN32 AND ${BYB_FORCE_RELEASE})
+    set_property(TARGET ${PROJECT_NAME} PROPERTY
+        MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+endif()
