@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
+
+cmake_policy(SET CMP0091 NEW)  # https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
 
 project(BackyardBrains
     LANGUAGES CXX
@@ -10,8 +12,8 @@ find_package(LSL REQUIRED
       HINTS ${LSL_INSTALL_ROOT}                                   # User-provided option
       "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/build/"         # Defaults
       "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/build/install"
-      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/out/install/x64-Debug"  # Some defaults for windows visual studio
-      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/out/install/x64-Release"
+      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/out/install/x64-Release" # Some defaults for windows visual studio
+      "${CMAKE_CURRENT_LIST_DIR}/../../LSL/liblsl/out/install/x64-Debug"  
       PATH_SUFFIXES share/LSL
 )
 
@@ -107,7 +109,8 @@ installLSLAuxFiles(${PROJECT_NAME}
 
 LSLGenerateCPackConfig()
 
-option(BYB_FORCE_RELEASE "<help_text>" FALSE)
+# Only Debug builds seem to work, but MSVC runtime installers don't include debug, so we link to release runtime.
+option(BYB_FORCE_RELEASE "" ON)
 if(WIN32 AND ${BYB_FORCE_RELEASE})
     set_property(TARGET ${PROJECT_NAME} PROPERTY
         MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")

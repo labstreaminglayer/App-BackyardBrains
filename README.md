@@ -15,9 +15,10 @@ see the [LabStreamingLayer documentation](https://labstreaminglayer.readthedocs.
 
 ### Run Dependencies
 
-The Windows and Mac zip files should come with all of the dependencies you need. However, it seems at least the windows package is missing a couple pieces:
+Windows:
 * [VisualC runtime](https://aka.ms/vs/16/release/vc_redist.x64.exe)
 * [hidapi.dll from this zip](https://github.com/libusb/hidapi/releases/latest/download/hidapi-win.zip)
+    * For now I include this in the release package.
 
 On Linux you'll have to install them yourself: `sudo apt-get install -y libhidapi-dev qt5-default`
 
@@ -33,6 +34,11 @@ See the [releases page](https://github.com/labstreaminglayer/App-BackyardBrains/
 
 This application can be built following general
 [LSL Application build instructions](https://labstreaminglayer.readthedocs.io/dev/app_build.html).
+
+However, it seems that only the Debug version works. I haven't figured out why.
+As it's only the Debug version that works, to share the compiled program we need to share the Debug build,
+but this links against MSVCRT that does not ship in standard VC Redistributables. Therefore there is a CMake
+option `BYB_FORCE_RELEASE` to force linking against Release runtime that defaults to TRUE. 
 
 ### Build Dependencies
 
