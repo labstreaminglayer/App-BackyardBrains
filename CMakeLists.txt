@@ -106,6 +106,8 @@ installLSLApp(${PROJECT_NAME})
 installLSLAuxFiles(${PROJECT_NAME}
     ${PROJECT_NAME}.cfg
 )
+#windeployqt misses hidapi.dll so we'll do that one manually.
+install(FILES $<TARGET_FILE:HIDAPI::hidapi-libusb> DESTINATION "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/")
 
 LSLGenerateCPackConfig()
 
